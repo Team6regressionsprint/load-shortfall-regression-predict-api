@@ -26,6 +26,9 @@ import numpy as np
 import pandas as pd
 import pickle
 import json
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import RepeatedKFold
+from sklearn.linear_model import LinearRegression
 
 def _preprocess_data(data):
     """Private helper function to preprocess data for model prediction.
@@ -58,7 +61,23 @@ def _preprocess_data(data):
     # ---------------------------------------------------------------
 
     # ----------- Replace this code with your own preprocessing steps --------
-    predict_vector = feature_vector_df[['Madrid_wind_speed','Bilbao_rain_1h','Valencia_wind_speed']]
+    df_test = feature_vector_df
+    df_test_copy = df_test.copy()
+
+    df_test_copy['time']=pd.to_datetime(df_test['time'])
+
+    # Month
+    df_test_copy['Month'] = df_test_copy['time'].dt.month
+
+    # Year
+    df_test_copy['Year'] = df_test_copy['time'].dt.year
+    df_test_copy = df_test_copy.drop(['time', 'Valencia_wind_deg', 'Seville_pressure', 'Unnamed: 0'], axis=1)
+
+    df_test_copy['Valencia_pressure'] = df_test_copy.Valencia_pressure.fillna(float(1005.333333))
+    df_test_copy = df_test_copy.drop(['Seville_temp_max','Valencia_temp_max','Valencia_temp_min','Barcelona_temp_max','Madrid_temp_max','Bilbao_temp_min','Barcelona_temp_min','Bilbao_temp_max','Seville_temp_min','Madrid_temp_min'], axis=1)
+        
+    predict_vector=df_test_copy  
+    print(df_test_copy.info())
     # ------------------------------------------------------------------------
 
     return predict_vector
